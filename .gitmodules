@@ -1,0 +1,9 @@
+[submodule "backend/auth-service"]
+	path = backend/auth-service
+	url = ./backend/auth-service
+[submodule "backend/post-service"]
+	path = backend/post-service
+	url = ./backend/post-service
+[submodule "backend/user-service"]
+	path = backend/user-service
+	url = ./backend/user-service

@@ -1,0 +1,64 @@
+services:
+  database_posts:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: jaimedaniel
+      POSTGRES_PASSWORD: jaimeDev
+      POSTGRES_DB: prueba_tecnica_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  auth-service:
+    build: ./backend/auth-service
+    depends_on:
+      - database_posts
+    environment:
+      DATABASE_URL: postgresql://jaimedaniel:jaimeDev@database_posts:5432/prueba_tecnica_db
+      JWT_SECRET: supersecretjwtkey
+      FRONTEND_URL: http://frontend:5173
+    ports:
+      - "5050:5050"
+    command: sh -c "npx prisma migrate deploy"
+
+  post-service:
+    build: ./backend/post-service
+    depends_on:
+      - database_posts
+    environment:
+      DATABASE_URL: postgresql://jaimedaniel:jaimeDev@database_posts:5432/prueba_tecnica_db
+      JWT_SECRET: supersecretjwtkey
+      FRONTEND_URL: http://frontend:5173
+    ports:
+      - "5052:5052"
+    command: sh -c "npx prisma migrate deploy"
+
+  user-service:
+    build: ./backend/user-service
+    depends_on:
+      - database_posts
+    environment:
+      DATABASE_URL: postgresql://jaimedaniel:jaimeDev@database_posts:5432/prueba_tecnica_db
+      JWT_SECRET: supersecretjwtkey
+      FRONTEND_URL: http://frontend:5173
+    ports:
+      - "5053:5053"
+    command: sh -c "node dist/main"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_URL_USER: http://user-service:5053
+      VITE_URL_AUTH: http://auth-service:5050
+      VITE_URL_POST: http://post-service:5052
+    depends_on:
+      - auth-service
+      - post-service
+      - user-service
+
+volumes:
+  db_data:
